@@ -1,0 +1,31 @@
+---
+# variables used for IOS upgrade playbook
+upgrade_ios_version: 17.03.05
+upgrade_ios_image: asr920-universalk9_npe.17.03.04.SPA.bin
+upgrade_ios_md5: 6035fff9ef88f148126732cea964964f
+#upgrade_ios_md5: acb7f6a17cc87bb688cd3b991aff1c2e 17.3.4
+disk_spacefree_kb: 550000
+device_models:
+  - ASR-920-24TZ-M
+  - ASR-920-24SZ-IM
+  - ASR-920-24SZ-M
+#ftp_user: calo
+#ftp_password: calo
+#ftp_server: 10.207.204.10
+transfer_protocol: ftp
+transfer_protocol_user: calo
+transfer_protocol_password: calo
+transfer_protocol_server: 10.207.204.10
+#transfer_protocol_path: 
+#transfer_protocol_vrf: Mgmt-intf
+device_disk: bootflash
+precheck_path: /var/lib/kubelet/pods/7eb77c51-73d1-4052-8acf-58200724afa9/volumes/kubernetes.io~empty-dir/awx-demo-projects/_10__ansible_ios_upgrade_master/output-files/
+#precheck_path: /data/projects/ansible_ios_upgrade/
+postcheck_path: output-files/
+#postcheck_path: /data/projects/ansible_ios_upgrade/
+check_commands:
+  - show running-config
+  - show interfaces
+  - show version
+  - show inventory
+

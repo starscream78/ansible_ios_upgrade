@@ -1,0 +1,29 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+
+    - name: Verifying MD5 checksum in device
+      cli_command:
+        command: "verify /md5 bootflash:{{ upgrade_ios_image }}"
+      register: md5_verify
+      vars:
+        ansible_command_timeout: 600
+             
+    - name: Copying ouput to local file
+      copy:
+        content: "{{ md5_verify.stdout }}"
+        #dest: "{{ precheck_path }}precheck_{{ inventory_hostname }}_verify-md5_console.txt"
+        dest: "precheck_{{ inventory_hostname }}_verify-md5_console.txt"
+    - name: Verifying calculated MD5 checksum is equal to expected checksum
+      ansible.builtin.assert:
+        that:
+          - md5_verify.stdout_lines[-1] | split('=') | last | trim  ==  upgrade_ios_md5
+        success_msg: "MD5 checksum IS correct. WILL proceed with new software image upgrade"
+        fail_msg: "MD5 checksum IS NOT correct. WILL NOT proceed with new software image upgrade"

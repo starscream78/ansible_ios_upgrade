@@ -1,0 +1,20 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Changing Boot Variable to new image
+      cisco.ios.ios_config:
+        parents: boot-start-marker
+        commands:
+          - "boot system {{ device_disk }}:{{ upgrade_ios_image }}"
+          - "boot system {{ ansible_net_image }}"
+        match: exact
+        before:
+          - no boot system
+        save_when: always

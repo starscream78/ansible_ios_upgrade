@@ -1,0 +1,31 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Reloading the Device
+      cli_command:
+        command: "reload"
+        check_all: True
+        prompt:
+          - "Save?"
+          - "reload?"
+          - "confirm"
+        answer:
+          - 'yes'
+          - 'yes'
+          - 'y'
+
+    - name: reset the connection
+      ansible.builtin.meta: reset_connection
+
+    - name: Wait for network device to come back up
+      ansible.builtin.wait_for_connection:
+        delay: 100
+        connect_timeout: 600
+        timeout: 1200

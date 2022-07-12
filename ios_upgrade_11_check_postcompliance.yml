@@ -1,0 +1,19 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Checking post {{ ansible_net_iostype }} version
+      cisco.ios.ios_facts:
+    
+    - name: Verifying if current version is equal to upgrade version
+      ansible.builtin.assert:
+        that:
+          - ansible_net_version == upgrade_ios_version
+        success_msg: "Current {{ ansible_net_iostype }} version IS up to date. Upgrade sucessfully completed"
+        fail_msg: "Current {{ ansible_net_iostype }} version IS NOT up to date. Upgrade failed to be completed"

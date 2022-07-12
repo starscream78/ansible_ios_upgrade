@@ -1,0 +1,23 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Comparing Pre and Post outputs
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Comparing pre and post routes
+      copy:
+        src: "{{ postcheck_path }}postcheck_{{ inventory_hostname }}_route-"
+        dest: "{{ precheck_path }}precheck_{{ inventory_hostname }}_route"
+      check_mode: yes
+      diff: yes
+	  	  
+    - name: Comparing pre and post interface IP
+      copy:
+        src: "{{ postcheck_path }}postcheck_{{ inventory_hostname }}_interface-ip"
+        dest: "{{ precheck_path }}precheck_{( inventory_hostname }}_interface-ip"
+      check_mode: yes
+      diff: yes

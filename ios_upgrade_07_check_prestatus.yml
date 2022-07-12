@@ -1,0 +1,24 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Get Pre-Check commands from devices
+      cisco.ios.ios_command:
+        commands: "{{ check_commands }}"
+      register: check_outputs
+      vars:
+        ansible_command_timeout: 300
+
+    - name: Save Pre-Check commands output to files
+      delegate_to: localhost
+      copy: content="{{ item[0] }}" dest="{{ precheck_path }}precheck_{{ inventory_hostname }}_{{ item[1] | replace(" ", "_") }}_console.txt"
+      loop: "{{ check_outputs['stdout'] | zip(check_commands) | list }}"
+      when:
+        - check_outputs is defined
+      #no_log: True

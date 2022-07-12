@@ -1,0 +1,43 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Checking current {{ ansible_net_iostype }} version
+      cisco.ios.ios_facts:
+
+    - name: Remove all inactive packages from device to release filesystems space
+      block:
+        - name: Check filesystems space on {{ device_disk }} when there is not enough space left
+          ansible.builtin.assert:
+            that:
+              - ansible_net_filesystems_info["{{ device_disk }}:"]['spacefree_kb']|int > disk_spacefree_kb|int
+            fail_msg: "There IS NOT enough space left on device {{ device_disk }}:. Inactive packages will be removed."
+            success_msg: "There IS enough space on {{ device_disk }} for upload the new {{ ansible_net_iostype }} image."
+
+      rescue:
+        - name: Remove all inactive packages from device to release filesystems space
+          cisco.ios.ios_command:
+            commands:
+            - command: install remove inactive
+              prompt: Do you want to remove the above files?
+              answer: y
+          vars:
+            ansible_command_timeout: 600
+          when:
+            - ansible_net_filesystems_info["{{ device_disk }}:"]['spacefree_kb']|int < disk_spacefree_kb|int
+    
+    - name: Getting updated {{ device_disk }} free space 
+      cisco.ios.ios_facts:
+
+    - name: Verifying enough free space in device after removing inactive packages
+      ansible.builtin.assert:
+        that:
+          - ansible_net_filesystems_info['bootflash:'].spacefree_kb|int >  disk_spacefree_kb|int
+        success_msg: "This device DOES have enough free memory in {{ device_disk }} to proceed. Image will be copied"
+        fail_msg: "This device DOES NOT have enough free memory in {{ device_disk }} to proceed. Manual deletion of files is required to proceed"

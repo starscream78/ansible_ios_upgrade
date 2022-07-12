@@ -1,0 +1,24 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Checking current {{ ansible_net_iostype }} version
+      cisco.ios.ios_facts:
+
+    - name: Reading 'dir {{ device_disk }}:' ouput
+      cli_command:
+        command: "dir {{ device_disk }}:*.bin"
+      register: dir_disk
+     
+    - name: Validating that new image is not already in bootflash
+      ansible.builtin.assert: 
+        that:
+          - "'{{ upgrade_ios_image }}' not in dir_disk.stdout"
+        success_msg: "Passed: {{ upgrade_ios_image }} NOT in device {{ device_disk }} disk. Image file WILL be copied"
+        fail_msg: "Failed: {{ upgrade_ios_image }} ALREADY in device {{ device_disk }} disk. Image file WONT be copied"

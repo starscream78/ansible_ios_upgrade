@@ -1,0 +1,32 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Deleting failed image file from {{ device_disk }}
+      cli_command:
+        command: "delete {{ device_disk }}:{{ upgrade_ios_image }}"
+        check_all: True
+        prompt:
+          - "Delete filename [{{ upgrade_ios_image }}]?"
+          - "Delete {{ device_disk }}:/{{ upgrade_ios_image }}? [confirm]"
+        answer:
+          - "\r"
+          - "\r"
+
+    - name: Reading 'dir {{ device_disk }}:' ouput
+      cli_command:
+        command: "dir {{ device_disk }}:"
+      register: dir_disk
+     
+    - name: Validating that new image is not already in {{ device_disk }}
+      ansible.builtin.assert: 
+        that:
+          - "'{{ upgrade_ios_image }}' not in dir_disk.stdout"
+        success_msg: "Passed: {{ upgrade_ios_image }} NOT in device {{ device_disk }} disk. File succesfully deleted"
+        fail_msg: "Failed: {{ upgrade_ios_image }} ALREADY in device {{ device_disk }} disk. File unsuccesfully deleted"

@@ -1,0 +1,21 @@
+---
+# Ansible Playbook to upgrade Cisco IOS
+
+
+- name: Upgrade Cisco IOS
+  hosts: ios_upgrade_asr920
+  connection: network_cli
+  vars_files:
+    - ios_upgrade_vars.yml
+  tasks:
+    - name: Copying new {{ ansible_net_iostype }} image to {{ device_disk }} on device. This may take time.....
+      cisco.ios.ios_command:
+        commands: 
+          #- command: "copy ftp://{{ftp_user}}:{{ftp_password}}@{{ftp_server}}/{{ upgrade_ios_image }} flash:{{ upgrade_ios_image }}"
+          #- command: "copy {{ transfer_protocol }}://{{ transfer_protocol_user }}:{{ transfer_protocol_password }}@{{ transfer_protocol_server }}/ {% if {{ transfer_protocol_path }} %} {{ transfer_protocol_path }}/ {% endif %} {{ upgrade_ios_image }} {{ device_disk }}: {% if {{ transfer_protocol_vrf }} %} vrf {{ transfer_protocol_vrf }}{% endif %}"
+          - command: "copy {{ transfer_protocol }}://{{ transfer_protocol_user }}:{{ transfer_protocol_password }}@{{ transfer_protocol_server }}/{{ upgrade_ios_image }} {{ device_disk }}:"
+            prompt: 'Destination filename [{{ upgrade_ios_image }}]?'
+            answer: "\r"
+      vars:
+        ansible_command_timeout: 3600
+
